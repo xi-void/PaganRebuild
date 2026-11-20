@@ -1,0 +1,9 @@
+# A lava tile keeps dealing damage after contact. The Avatar survives
+# repeated burns at full health.
+args: --map 39 --pos 16454,13798,48
+do: t10;option:avatar_menu,on;look:1;t10;answer:13;answer:14;t5
+do: place:409,3,16510,13850,48;event:@,gotHit;t250;vitals;stasis
+expect: "God Mode: ON", "Done"]
+expect: vitals: hp 30/30
+expect: stasis: false
+reject: the Avatar is dead

@@ -551,6 +551,7 @@ impl Game {
         self.scripts.next_list = d.next_list;
         self.barks = d.barks;
         self.ask = d.ask;
+        self.refresh_god_mode_choice();
         self.ui.reader = d.reader;
         self.fights.changelings = changelings;
         self.fights.map_states = map_states;

@@ -499,6 +499,12 @@ impl Game {
     pub fn answer(&mut self, n: usize) {
         let Some((pid, choices)) = self.ask.clone() else { return };
         let Some(choice) = choices.get(n) else { return };
+        if crate::game::god_mode_choice(&choices) == Some(n) && self.cheat_menu_open() {
+            self.options.god_mode = !self.options.god_mode;
+            self.save_settings();
+            self.refresh_god_mode_choice();
+            return;
+        }
         // (sleeping until a time of day: the bed's script gets a number)
         let choice = self.sleep_answer(n).unwrap_or_else(|| choice.clone());
         self.golem_order(pid, choices.len(), n);

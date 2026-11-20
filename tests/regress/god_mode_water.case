@@ -1,0 +1,11 @@
+# Falling from the vanished Lower Catacombs platform normally starts a
+# drowning sequence. With God Mode on the Avatar survives and keeps control.
+args: --map 31 --pos 24640,20095,128
+do: t5;option:avatar_menu,on;look:1;t10;answer:13;answer:14;t5
+do: flag:makePlatformAppear=1;goto:24884,16000,0;t20;goto:24640,20095,128;t350;goto:24940,20095,128;t50;where:1;t250;where:1;t400;stasis;vitals
+expect: "God Mode: ON", "Done"]
+expect: where 1: 24940,20095,128
+expect: where 1: 24940,20095,32
+expect: stasis: false
+expect: vitals: hp 30/30
+reject: the Avatar is dead

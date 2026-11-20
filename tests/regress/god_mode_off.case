@@ -1,0 +1,5 @@
+# The same type of monster hurts and kills the Avatar with default settings.
+args: --map 39 --pos 16454,13798,48
+do: t10;spawn:357,120;t90;vitals;t180
+expect: vitals: hp 7/30
+expect: the Avatar is dead

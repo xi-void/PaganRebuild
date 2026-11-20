@@ -1,0 +1,11 @@
+# The settings win when loading a save made with the cheat menu open.
+# Explicitly targeting the Avatar with the original Kill me action still works.
+args: --map 39 --pos 16454,13798,48
+do: t10;option:avatar_menu,on;look:1;t10;answer:13;saveslot:5
+do: say:God Mode: ON;loadslot:5;say:God Mode: OFF;say:Kill me;t10;target:1;t180
+expect: saveslot: Ok("ok")
+expect: loadslot: Ok(())
+expect: "God Mode: OFF", "Done"]
+expect: say:God Mode: ON: God Mode: ON
+expect: say:God Mode: OFF: God Mode: OFF
+expect: the Avatar is dead

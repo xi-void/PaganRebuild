@@ -130,7 +130,7 @@ impl Game {
 
     /// Whether the debug menu of the original is open (the Avatar's look
     /// script runs it, and only that long).
-    fn cheat_menu_open(&self) -> bool {
+    pub(crate) fn cheat_menu_open(&self) -> bool {
         self.scripts.procs.iter().any(|p| p.item == AVATAR && p.class == AVATAR_CLASS && p.ptype == LOOK_PROCESS && !p.terminated)
     }
 

@@ -1,0 +1,10 @@
+# Closing a trapped book on the ground still triggers its blast. The same
+# trap hurts the Avatar with God Mode off (book_trap_hurts.case).
+args: --cheat --map 37 --pos 14655,2883,64
+do: t5;look:1;t10;answer:13;answer:14;t5
+do: place:637,0,14600,2900,64;putin:@,613,18,40;t1;use:@;t10
+do: page;page;page;page;page;page;page;page;page;page;t100;vitals;stasis
+expect: "God Mode: ON", "Done"]
+expect: sfx 143
+expect: vitals: hp 30/30
+expect: stasis: false

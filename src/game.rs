@@ -16,6 +16,13 @@ use std::error::Error;
 use std::path::Path;
 
 pub const AVATAR: u16 = 1;
+const GOD_MODE_CHOICES: [&str; 2] = ["God Mode: OFF", "God Mode: ON"];
+
+pub fn god_mode_choice(choices: &[String]) -> Option<usize> {
+    let [.., toggle, done] = choices else { return None };
+    (done == "Done" && GOD_MODE_CHOICES.contains(&toggle.as_str())).then_some(choices.len() - 2)
+}
+
 /// The number the scripts let the Guardian speak under. No item has it:
 /// he is only heard (his voice is SOUND/?666.FLX).
 pub const GUARDIAN: u16 = 666;
@@ -1015,6 +1022,13 @@ impl Game {
         // answers of an open conversation, numbered, above the Avatar
         // like what the others say above themselves
         if let Some((_, choices)) = &self.ask {
+            // Keep the last choice reachable at large text sizes.
+            let ts = if god_mode_choice(choices).is_some() {
+                let room = ((surf.height - 4) / choices.len() as i32).max(1);
+                ts.min(room as f32 / font.height_at(1.0).max(1) as f32)
+            } else {
+                ts
+            };
             let lh = font.height_at(ts);
             let total = choices.len() as i32 * lh;
             let top = (head - total).clamp(2, (surf.height - total - 4).max(2));
@@ -1458,6 +1472,20 @@ impl Game {
             return 1.0;
         }
         (f * self.view.zoom).round().max(1.0)
+    }
+
+    /// Keep Done at the bottom of the original cheat menu.
+    pub fn refresh_god_mode_choice(&mut self) {
+        if !self.cheat_menu_open() {
+            return;
+        }
+        let Some((_, choices)) = &mut self.ask else { return };
+        let label = GOD_MODE_CHOICES[usize::from(self.options.god_mode)];
+        if let Some(index) = god_mode_choice(choices) {
+            choices[index] = label.to_string();
+        } else if choices.last().is_some_and(|last| last == "Done") && choices.first().is_some_and(|first| first == "Demo") {
+            choices.insert(choices.len() - 1, label.to_string());
+        }
     }
 
     /// The answer shown at a view position, if a conversation is open.

@@ -2,4 +2,4 @@
 # menu without --cheat; with the option off it does not
 args: --no-menu
 do: t60;option:avatar_menu,on;look:1;t30
-expect: answers: ["Demo", "Spell Book", "Information", "Enemy Caster", "Time", "Key", "Staff", "Call Guards", "Blow up!", "Kill me", "EndGame", "Jump ahead.", "Done"]
+expect: answers: ["Demo", "Spell Book", "Information", "Enemy Caster", "Time", "Key", "Staff", "Call Guards", "Blow up!", "Kill me", "EndGame", "Jump ahead.", "God Mode: OFF", "Done"]

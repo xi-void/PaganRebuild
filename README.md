@@ -16,6 +16,15 @@ Windows 64-bit releases keep saves and settings in `%APPDATA%\pagan`.
 On Linux, build from source and run the native executable as shown below.
 Saves and settings are kept in `$XDG_DATA_HOME/pagan` (default `~/.local/share/pagan`).
 
+## God Mode
+
+Set `avatar_menu=on` in `settings.ini` or start the game with `--cheat`.
+Look at the Avatar, then choose **God Mode: OFF** to turn
+protection on. Choose **God Mode: ON** to turn it off again.
+The game remembers the choice in `settings.ini`. Ordinary damage affects
+the Avatar only while God Mode is off. Scripted story deaths and the
+cheat menu's **Kill me** command still work.
+
 ## Album music (optional)
 
 PaganRebuild can play the album "Ultima VIII: Pagan - Orchestral Re-Arrangement" instead of the MIDI music. The album is not included:

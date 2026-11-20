@@ -14,6 +14,19 @@ use crate::vm::Kind;
 /// The process type of an egg's hatch script.
 const PTYPE_HATCH: u16 = 0x210;
 
+/// Usecode classes that deliberately kill the Avatar during a scene.
+/// Water, lava and traps can also ask for an exact-HP hit, so the amount
+/// alone cannot distinguish a scripted death from a hazard.
+fn scripted_avatar_death(class: u16) -> bool {
+    matches!(
+        class,
+        109 | 1169 | 1190 // Pyros and the Titans at the end
+            | 567 | 1031 | 1407 // Mordea's bed, Mordea and the execution
+            | 1025 | 1026 | 1057 // the debug menu, Devon and Mythran
+            | 1413 | 1428 // Ethereal spells and Vividos' quake
+    )
+}
+
 /// Reads the arguments of an intrinsic call (top of the stack first).
 struct Args<'a> {
     d: &'a [u8],
@@ -284,6 +297,7 @@ impl Game {
         // (nothing picked at first: the keys or the pad pick, see play.rs)
         self.ask_pick = None;
         self.ask = Some((pid, choices));
+        self.refresh_god_mode_choice();
         pid as u32
     }
 
@@ -992,6 +1006,9 @@ impl Game {
             }
             0x8D | 0x8E => {
                 let id = this!();
+                if func == 0x8D && self.avatar_damage_ignored(id) && !scripted_avatar_death(self.scripts.procs[caller].class) {
+                    return 0;
+                }
                 self.state_mut(id).dead = func == 0x8D;
                 if let Some(idx) = self.map().index(id) {
                     self.map_mut().items[idx].dead = func == 0x8D;
@@ -1038,7 +1055,8 @@ impl Game {
                 let damage = a.i16();
                 let dtype = a.u16();
                 if self.item(id).is_some_and(|it| it.is_actor()) {
-                    self.receive_script_hit(id, other, dir, damage, dtype);
+                    let story_death = scripted_avatar_death(self.scripts.procs[caller].class);
+                    self.receive_script_hit(id, other, dir, damage, dtype, story_death);
                 }
                 0
             }
@@ -1144,6 +1162,11 @@ impl Game {
             0xA8..=0xAB => {
                 let id = this!();
                 let v = a.u16() as i32 & 0xFF;
+                if func == 0xAB && self.avatar_damage_ignored(id) && v < self.state(id).hp
+                    && !scripted_avatar_death(self.scripts.procs[caller].class)
+                {
+                    return 0;
+                }
                 let st = self.state_mut(id);
                 match func {
                     0xA8 => st.strength = v,
@@ -1166,6 +1189,12 @@ impl Game {
             0xCF => self.stasis as u32,
             0xD0 => {
                 let on = a.u16() != 0;
+                // The drowning and sinking-lava scripts lock the controls
+                // and start the death animation before dealing their hit.
+                if on && self.avatar_damage_ignored(AVATAR) && matches!(self.scripts.procs[caller].class, 409 | 1390) {
+                    self.terminate(caller);
+                    return 0;
+                }
                 if on && !self.stasis {
                     // caught walking, running, jumping or climbing: that
                     // movement ends as usual, then he stands

@@ -228,7 +228,12 @@ impl Game {
         }
         let mut asked = 0;
         for _ in 0..TICK_LIMIT {
-            if let Some((_, choices)) = self.ask.clone() {
+            if let Some((_, mut choices)) = self.ask.clone() {
+                // Explore the choices the usecode script can receive.
+                let toggle = crate::game::god_mode_choice(&choices);
+                if let Some(i) = toggle {
+                    choices.remove(i);
+                }
                 let n = match path.get(asked) {
                     Some(&i) => i.min(choices.len().saturating_sub(1)),
                     None => {
@@ -242,7 +247,7 @@ impl Game {
                 if asked > ANSWER_LIMIT {
                     return false;
                 }
-                self.answer(n);
+                self.answer(n + usize::from(toggle.is_some_and(|i| n >= i)));
             }
             if self.ui.targeting.is_some() {
                 let target = self.nearest_creature();

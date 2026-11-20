@@ -525,7 +525,7 @@ impl Game {
     /// (also through a spell of its own) or the world did (water, lava,
     /// traps). It picks the music when the Avatar dies of it.
     pub fn receive_hit_by(&mut self, victim: u16, attacker: u16, dir: u8, damage: i32, damage_type: u16, by_enemy: bool) {
-        self.receive_hit_with(victim, attacker, dir, damage, damage_type, by_enemy, true);
+        self.receive_hit_with(victim, attacker, dir, damage, damage_type, by_enemy, true, false);
     }
 
     /// A hit a script deals with a fixed amount (receiveHit): no roll of
@@ -535,14 +535,18 @@ impl Game {
     /// whole (Vividos' quake, the end of a trapped book): the scripts wait
     /// for the death that follows, and a miss left the Avatar frozen for
     /// good (found by the test bot).
-    pub fn receive_script_hit(&mut self, victim: u16, attacker: u16, dir: u8, damage: i32, damage_type: u16) {
+    pub fn receive_script_hit(&mut self, victim: u16, attacker: u16, dir: u8, damage: i32, damage_type: u16, story_death: bool) {
         let deadly = damage > 0 && damage == self.state(victim).hp;
         let damage_type = if deadly { damage_type | DMG_PIERCE } else { damage_type };
         let by_enemy = self.map().get(attacker).is_some_and(|it| self.can_fight(it));
-        self.receive_hit_with(victim, attacker, dir, damage, damage_type, by_enemy, damage == 0);
+        self.receive_hit_with(victim, attacker, dir, damage, damage_type, by_enemy, damage == 0, story_death && deadly);
     }
 
-    fn receive_hit_with(&mut self, victim: u16, attacker: u16, dir: u8, mut damage: i32, mut damage_type: u16, by_enemy: bool, roll: bool) {
+    pub fn avatar_damage_ignored(&self, id: u16) -> bool {
+        id == AVATAR && self.options.god_mode
+    }
+
+    fn receive_hit_with(&mut self, victim: u16, attacker: u16, dir: u8, mut damage: i32, mut damage_type: u16, by_enemy: bool, roll: bool, story_death: bool) {
         if self.state(victim).dead || self.map().get(victim).is_none() {
             return;
         }
@@ -591,6 +595,10 @@ impl Game {
         }
         let sfx = self.random(50, 51);
         self.audio.play_sfx(sfx, victim, false, volume);
+
+        if self.avatar_damage_ignored(victim) && !story_death {
+            return;
+        }
 
         // the Avatar grows stronger by striking (not by kicking)
         if attacker == AVATAR && self.mover(AVATAR).last_anim() != anim::KICK {

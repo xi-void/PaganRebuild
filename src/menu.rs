@@ -346,6 +346,8 @@ pub struct Options {
     /// Not in the menu: only `avatar_menu=on` in settings.ini switches it on.
     /// Off as in the original.
     pub avatar_menu: bool,
+    /// Damage immunity for the Avatar, toggled in the original debug menu.
+    pub god_mode: bool,
     /// A map of the surroundings (key O) with a list of places: the way to
     /// the place chosen shows on the ground (guide.rs, worldmap.rs).
     pub guide: bool,
@@ -404,7 +406,7 @@ pub const ZOOM_NORMAL: usize = 1;
 
 impl Default for Options {
     fn default() -> Options {
-        Options { smooth_camera: true, even_walk: true, pick_things: true, enemy_health: true, modern_controls: true, click_walk: true, road_keys: true, turn_view: false, lighting: true, pixels: PIXELS_SHARP, zoom: ZOOM_NORMAL, text_size: 2, better_music: true, spatial_sound: true, show_armour: true, show_helm: true, minimap: true, better_inventory: true, hover_names: 0, hold_walk: true, journal: true, practice: true, album_music: true, better_sound: true, passersby: false, wide_view: true, shadows: true, sleep_until: true, notice_far: true, talk_truce: true, spell_notes: false, map_fade: true, victory_fanfare: false, avatar_outline: OUTLINE_DEFAULT, avatar_menu: false, guide: true, puzzle_spots: true, storm: 1, pentagram_snap: true, pentagram_reach: true, avoid_flames: true, monster_fade: true, seen_end: false, magic_glow: true, lamp_shadows: true }
+        Options { smooth_camera: true, even_walk: true, pick_things: true, enemy_health: true, modern_controls: true, click_walk: true, road_keys: true, turn_view: false, lighting: true, pixels: PIXELS_SHARP, zoom: ZOOM_NORMAL, text_size: 2, better_music: true, spatial_sound: true, show_armour: true, show_helm: true, minimap: true, better_inventory: true, hover_names: 0, hold_walk: true, journal: true, practice: true, album_music: true, better_sound: true, passersby: false, wide_view: true, shadows: true, sleep_until: true, notice_far: true, talk_truce: true, spell_notes: false, map_fade: true, victory_fanfare: false, avatar_outline: OUTLINE_DEFAULT, avatar_menu: false, god_mode: false, guide: true, puzzle_spots: true, storm: 1, pentagram_snap: true, pentagram_reach: true, avoid_flames: true, monster_fade: true, seen_end: false, magic_glow: true, lamp_shadows: true }
     }
 }
 
@@ -606,6 +608,8 @@ pub fn load_settings() -> ([u8; 3], Options) {
             };
         } else if key == "seen_end" {
             options.seen_end = val == "1" || val == "yes";
+        } else if key == "god_mode" {
+            options.god_mode = val == "1" || val == "on";
         } else if key == "modern_controls" {
             options.modern_controls = val == "1" || val == "on";
         } else if let Some(switch) = Switch::ALL.into_iter().find(|sw| sw.key() == key) {
@@ -635,6 +639,7 @@ fn save_settings(v: &[u8; 3], options: &Options) {
     text += &format!("storm_colours={}\n", options.storm);
     text += &format!("smooth_pixels={}\n", ["off", "xbr", "crt"][options.pixels.min(2)]);
     text += &format!("avatar_outline={}\n", options.avatar_outline);
+    text += if options.god_mode { "god_mode=on\n" } else { "god_mode=off\n" };
     if options.seen_end {
         text += "seen_end=yes\n";
     }
