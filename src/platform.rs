@@ -195,8 +195,27 @@ struct Gpu {
 
 impl Gpu {
     fn new(window: Arc<winit::window::Window>) -> Result<Gpu, String> {
-        // WGPU_BACKEND=vulkan|gl|metal picks one (for tests)
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor::from_env_or_default());
+        let descriptor = wgpu::InstanceDescriptor::from_env_or_default();
+        // wgpu 24 includes Vulkan and GLES on Linux. Try Vulkan first and
+        // keep WGPU_BACKEND=gl available for systems with an EGL driver.
+        #[cfg(target_os = "linux")]
+        if descriptor.backends.contains(wgpu::Backends::VULKAN | wgpu::Backends::GL) {
+            let mut vulkan = descriptor.clone();
+            vulkan.backends = wgpu::Backends::VULKAN;
+            return match Self::with_backend(window.clone(), &vulkan) {
+                Ok(gpu) => Ok(gpu),
+                Err(vulkan_error) => {
+                    let mut gl = descriptor;
+                    gl.backends = wgpu::Backends::GL;
+                    Self::with_backend(window, &gl).map_err(|gl_error| format!("Vulkan: {vulkan_error}; GLES: {gl_error}"))
+                }
+            };
+        }
+        Self::with_backend(window, &descriptor)
+    }
+
+    fn with_backend(window: Arc<winit::window::Window>, descriptor: &wgpu::InstanceDescriptor) -> Result<Gpu, String> {
+        let instance = wgpu::Instance::new(descriptor);
         let surface = instance.create_surface(window.clone()).map_err(|e| format!("no surface: {e}"))?;
         let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
             power_preference: wgpu::PowerPreference::HighPerformance,

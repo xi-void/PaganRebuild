@@ -120,8 +120,12 @@ fn read_flags(data: &[u8]) -> HashMap<String, (usize, usize)> {
 /// The English usecode of the game this checkout lies in (for unit tests).
 #[cfg(test)]
 pub fn for_tests() -> Option<Usecode> {
-    let game = Path::new(env!("CARGO_MANIFEST_DIR")).parent()?;
-    Usecode::load(&game.join("ENGLISH").join("USECODE").join("EUSECODE.FLX")).ok()
+    use crate::gamedata::asset;
+    let game = std::env::var_os("PAGAN_TEST_GAME")
+        .map(std::path::PathBuf::from)
+        .or_else(|| crate::find_game("ENGLISH"))?;
+    let usecode_dir = asset(&asset(&game, "ENGLISH"), "USECODE");
+    Usecode::load(&asset(&usecode_dir, "EUSECODE.FLX")).ok()
 }
 
 /// Reads code relative to the class base.

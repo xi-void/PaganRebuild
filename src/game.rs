@@ -473,11 +473,13 @@ impl Game {
     /// `lang_dir`: the language folder of the game (ENGLISH, GERMAN ...).
     /// `sound`: open the sound devices (off for tests without a window).
     pub fn load(lang_dir: &Path, sound: bool) -> Result<Game, Box<dyn Error>> {
-        let stat = lang_dir.join("STATIC");
-        let open = |name: &str| Flex::open(&stat.join(name)).map_err(|e| format!("{name}: {e}"));
+        use crate::gamedata::asset;
+
+        let stat = asset(lang_dir, "STATIC");
+        let open = |name: &str| Flex::open(&asset(&stat, name)).map_err(|e| format!("{name}: {e}"));
 
         // U8SAVE.000 is the state of the world at the start of a new game
-        let save_path = lang_dir.join("SAVEGAME").join("U8SAVE.000");
+        let save_path = asset(&asset(lang_dir, "SAVEGAME"), "U8SAVE.000");
         let mut save = save::read_savegame(&save_path).map_err(|e| format!("{}: {e}", save_path.display()))?;
         let mut member = |name: &str| -> Result<Flex, Box<dyn Error>> {
             let data = save.remove(name).ok_or(format!("{name} missing in {}", save_path.display()))?;
@@ -490,16 +492,16 @@ impl Game {
         let start_mana = avatar.mana as i32;
 
         // the usecode file is named after the language: EUSECODE, GUSECODE ...
-        let uc_dir = lang_dir.join("USECODE");
-        let initial = lang_dir.file_name().and_then(|n| n.to_str()).and_then(|n| n.chars().next()).unwrap_or('E');
+        let uc_dir = asset(lang_dir, "USECODE");
+        let initial = lang_dir.file_name().and_then(|n| n.to_str()).and_then(|n| n.chars().next()).unwrap_or('E').to_ascii_uppercase();
         let uc_path = [format!("{initial}USECODE.FLX"), "EUSECODE.FLX".to_string()]
             .iter()
-            .map(|n| uc_dir.join(n))
+            .map(|n| asset(&uc_dir, n))
             .find(|p| p.is_file())
             .ok_or(format!("no usecode file in {}", uc_dir.display()))?;
 
         // font 0 is the usual one; the others are picked by number where needed
-        let (font, fonts) = match Shapes::open(&stat.join("U8FONTS.FLX")) {
+        let (font, fonts) = match Shapes::open(&asset(&stat, "U8FONTS.FLX")) {
             Ok(mut f) => (f.get(0).map(Font::new), (0..16).map(|n| f.get(n).map(Font::new)).collect()),
             Err(_) => (None, Vec::new()),
         };
@@ -507,17 +509,17 @@ impl Game {
         let settings = crate::menu::load_settings();
         let mut game = Game {
             data: crate::gamedata::GameData {
-                shapes: Shapes::open(&stat.join("U8SHAPES.FLX"))?,
-                infos: shape::load_type_flags(&stat.join("TYPEFLAG.DAT"))?,
-                pal: Palette::load(&stat.join("U8PAL.PAL"))?,
-                anims: AnimDat::load(&stat.join("ANIM.DAT")).map_err(|e| format!("ANIM.DAT: {e}"))?,
+                shapes: Shapes::open(&asset(&stat, "U8SHAPES.FLX"))?,
+                infos: shape::load_type_flags(&asset(&stat, "TYPEFLAG.DAT"))?,
+                pal: Palette::load(&asset(&stat, "U8PAL.PAL"))?,
+                anims: AnimDat::load(&asset(&stat, "ANIM.DAT")).map_err(|e| format!("ANIM.DAT: {e}"))?,
                 font,
                 fonts,
                 monsters: crate::combat::load_monsters(),
                 weapon_overlays: open("WPNOVLAY.DAT")?,
                 tables: crate::equip::Tables::load(),
-                gump_shapes: Shapes::open(&stat.join("U8GUMPS.FLX"))?,
-                gump_areas: std::fs::read(stat.join("GUMPAGE.DAT"))
+                gump_shapes: Shapes::open(&asset(&stat, "U8GUMPS.FLX"))?,
+                gump_areas: std::fs::read(asset(&stat, "GUMPAGE.DAT"))
                     .unwrap_or_default()
                     .chunks_exact(8)
                     .map(|r| std::array::from_fn(|i| i16::from_le_bytes([r[i * 2], r[i * 2 + 1]]) as i32))
@@ -594,12 +596,12 @@ impl Game {
             spell_notes: Default::default(),
             guide: Default::default(),
             big_map: Default::default(),
-            audio: crate::audio::Audio::new(&lang_dir.join("SOUND"), initial.to_ascii_uppercase(), sound, settings.0, settings.1.better_music, settings.1.album_music),
+            audio: crate::audio::Audio::new(&asset(lang_dir, "SOUND"), initial, sound, settings.0, settings.1.better_music, settings.1.album_music),
             restart: false,
             fresh_start: false,
             waking: false,
             options: settings.1,
-            language: initial.to_ascii_uppercase(),
+            language: initial,
             name_probe: None,
             started: true,
             quit: false,

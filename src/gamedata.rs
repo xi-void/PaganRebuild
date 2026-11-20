@@ -8,6 +8,24 @@ use crate::font::Font;
 use crate::hash::HashMap;
 use crate::palette::Palette;
 use crate::shape::{ShapeInfo, Shapes};
+use std::path::{Path, PathBuf};
+
+/// DOS game data may have been unpacked with different letter casing.
+/// Prefer the exact spelling when an installation contains both variants.
+pub fn asset(dir: &Path, name: &str) -> PathBuf {
+    let exact = dir.join(name);
+    if exact.exists() {
+        return exact;
+    }
+    std::fs::read_dir(dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|entry| entry.file_name().eq_ignore_ascii_case(name))
+        .map(|entry| entry.path())
+        .min()
+        .unwrap_or(exact)
+}
 
 /// The game's own data from its files (gamedata.rs).
 pub struct GameData {

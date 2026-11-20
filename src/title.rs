@@ -113,7 +113,7 @@ impl Game {
 
     /// A file of the language (GINTRO.SKF), or the English one.
     pub(crate) fn language_file(&self, name: &str) -> Option<std::path::PathBuf> {
-        [format!("{}{name}", self.language), format!("E{name}"), name.to_string()].iter().map(|n| self.data.static_dir.join(n)).find(|p| p.is_file())
+        [format!("{}{name}", self.language), format!("E{name}"), name.to_string()].iter().map(|n| crate::gamedata::asset(&self.data.static_dir, n)).find(|p| p.is_file())
     }
 
     /// Starts a movie; false if the file is not there.

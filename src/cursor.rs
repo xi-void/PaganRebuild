@@ -38,7 +38,7 @@ pub struct Cursor {
 
 impl Cursor {
     pub fn load(game_static: &std::path::Path) -> Cursor {
-        let shape = std::fs::read(game_static.join("U8MOUSE.SHP")).ok().and_then(|d| crate::shape::decode_shape(&d));
+        let shape = std::fs::read(crate::gamedata::asset(game_static, "U8MOUSE.SHP")).ok().and_then(|d| crate::shape::decode_shape(&d));
         if shape.is_none() {
             eprintln!("U8MOUSE.SHP not found: the system pointer is used");
         }

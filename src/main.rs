@@ -257,7 +257,9 @@ fn find_game(lang: &str) -> Option<PathBuf> {
     let starts = std::env::current_dir().ok().into_iter().chain(exe_dir());
     for mut dir in starts {
         loop {
-            if dir.join(lang).join("STATIC").join("U8SHAPES.FLX").is_file() {
+            let lang_dir = gamedata::asset(&dir, lang);
+            let static_dir = gamedata::asset(&lang_dir, "STATIC");
+            if gamedata::asset(&static_dir, "U8SHAPES.FLX").is_file() {
                 return Some(dir);
             }
             if !dir.pop() {
@@ -343,7 +345,7 @@ fn new_game(args: &Args) -> Result<Game, Box<dyn Error>> {
         Some(d) => d,
         None => return Err("game folder not found - pass it with --game <dir>".into()),
     };
-    let lang_dir = game_dir.join(&args.lang);
+    let lang_dir = gamedata::asset(&game_dir, &args.lang);
     let mut game = Game::load(&lang_dir, (args.screenshot.is_none() || crate::debug::env().sound) && !args.no_sound).map_err(|e| format!("{}: {e}", lang_dir.display()))?;
 
     if args.map.is_some() || args.pos.is_some() {

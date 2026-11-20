@@ -12,7 +12,9 @@ Project page: https://scareglow23.github.io/PaganRebuild/
 2. Extract it into the Ultima 8 folder (where `ENGLISH\` is).
 3. Run `PaganRebuild\PaganRebuild.exe` (German version: `--lang german`, French: `--lang french`).
 
-Windows 64-bit. Linux and macOS are not tested yet. Savegames and settings are kept in `%APPDATA%\pagan`.
+Windows 64-bit releases keep saves and settings in `%APPDATA%\pagan`.
+On Linux, build from source and run the native executable as shown below.
+Saves and settings are kept in `$XDG_DATA_HOME/pagan` (default `~/.local/share/pagan`).
 
 ## Album music (optional)
 
@@ -34,7 +36,28 @@ Rust (stable) is needed. On Windows the GNU toolchain is used (`stable-x86_64-pc
 cargo build --release
 ```
 
-The program is `target/release/PaganRebuild.exe`. It finds the game data by looking in the folders above it; otherwise give the folder with `--game <dir>`. All options: `PaganRebuild --help`.
+The Windows executable is `target/release/PaganRebuild.exe`. On Linux it is
+`target/release/PaganRebuild`. Both look for game data in the folders above the
+working directory and the executable. To choose the installation explicitly,
+pass the directory containing the language folders. For example:
+
+```sh
+./target/release/PaganRebuild --game "$HOME/Games/u8gog"
+```
+
+On Linux, building requires a C linker, `pkg-config`, ALSA and libudev
+development files. On Arch Linux, use `base-devel`, `alsa-lib` and
+`systemd-libs`. The game runs under Wayland or X11 and tries Vulkan first,
+then GLES. On Intel Mesa, the relevant driver packages are `vulkan-intel`
+and `mesa`. Use `WGPU_BACKEND=gl` to select GLES explicitly.
+
+Linux MIDI playback uses an SF2 SoundFont. Place one in the user folder's
+`soundfonts` subdirectory or in a `soundfonts` folder next to the executable.
+The optional album works on Linux as well.
+
+Run `PaganRebuild --help` for all command-line options. To run tests against a
+separate game installation, set `PAGAN_TEST_GAME` to the same directory you
+would pass to `--game`.
 
 ## Credits
 

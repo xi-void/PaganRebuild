@@ -11,7 +11,7 @@
 //!                   (relative to the game folder, e.g. for the album music)
 //!
 //! The original game files are needed: they are looked for in the folders
-//! above this one (as the game itself does). Without them the tests are
+//! above this one (as the game itself does) or in `PAGAN_TEST_GAME`. Without them the tests are
 //! skipped. Savegames go to a folder of their own, never to the player's.
 //!
 //! Run with `cargo test --release` (the scripts are slow without optimising).
@@ -61,6 +61,9 @@ fn parse(path: &Path) -> Case {
 
 /// The game folder: the first folder above this one with ENGLISH/STATIC.
 fn game_dir() -> Option<PathBuf> {
+    if let Some(dir) = std::env::var_os("PAGAN_TEST_GAME") {
+        return Some(PathBuf::from(dir));
+    }
     let mut dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     loop {
         if dir.join("ENGLISH").join("STATIC").join("U8SHAPES.FLX").is_file() {

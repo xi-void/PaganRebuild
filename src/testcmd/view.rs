@@ -938,7 +938,7 @@ fn cmd_sheet(game: &mut Game, surf: &mut Surface, opts: &mut ViewOptions, _st: &
 
 /// mousesheet:<png>  all pictures of the mouse pointer, numbered
 fn cmd_mousesheet(game: &mut Game, surf: &mut Surface, _opts: &mut ViewOptions, _st: &mut State, _name: &str, arg: &str, _cmd: &str) -> Result<Flow, String> {
-    let d = std::fs::read(game.data.static_dir.join("U8MOUSE.SHP")).map_err(|e| e.to_string())?;
+    let d = std::fs::read(crate::gamedata::asset(&game.data.static_dir, "U8MOUSE.SHP")).map_err(|e| e.to_string())?;
     let shape = shape::decode_shape(&d).ok_or("cannot decode U8MOUSE.SHP")?;
     surf.pixels.fill(0x404040);
     for (i, f) in shape.frames.iter().enumerate() {

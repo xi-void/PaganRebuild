@@ -18,6 +18,9 @@ use std::process::Command;
 
 /// The game folder: the first folder above this one with ENGLISH/STATIC.
 fn game_dir() -> Option<PathBuf> {
+    if let Some(dir) = std::env::var_os("PAGAN_TEST_GAME") {
+        return Some(PathBuf::from(dir));
+    }
     let mut dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     loop {
         if dir.join("ENGLISH").join("STATIC").join("U8SHAPES.FLX").is_file() {

@@ -991,8 +991,8 @@ impl Audio {
             handle,
             sound_dir: sound_dir.to_path_buf(),
             lang,
-            sfx: Flex::open(&sound_dir.join("SOUND.FLX")).ok(),
-            music: Flex::open(&sound_dir.join("MUSIC.FLX")).ok(),
+            sfx: Flex::open(&crate::gamedata::asset(sound_dir, "SOUND.FLX")).ok(),
+            music: Flex::open(&crate::gamedata::asset(sound_dir, "MUSIC.FLX")).ok(),
             speech: HashMap::default(),
             playing: Vec::new(),
             spatial: false,
@@ -1163,7 +1163,7 @@ impl Audio {
     /// it was recorded. Returns the length in milliseconds.
     pub fn speak(&mut self, shape: u32, text: &str) -> Option<u32> {
         if !self.speech.contains_key(&shape) {
-            let s = Speech::open(&self.sound_dir.join(format!("{}{}.FLX", self.lang, shape)));
+            let s = Speech::open(&crate::gamedata::asset(&self.sound_dir, &format!("{}{}.FLX", self.lang, shape)));
             self.speech.insert(shape, s);
         }
         let speech = self.speech.get(&shape)?.as_ref()?;

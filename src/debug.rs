@@ -6,6 +6,7 @@
 //! whatever it is set to; the few that take a value say so.
 //!
 //! Not listed here, because the program itself does not read them:
+//! `PAGAN_TEST_GAME` (tests: path to the original game data),
 //! `PAGAN_CASE` (tests/regress.rs: run one regression case) and
 //! `PAGAN_ALBUM_WAV` / `PAGAN_ALBUM_OGG` (a test in album.rs that compares
 //! the album's files in two folders).
